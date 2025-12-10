@@ -134,15 +134,22 @@ export default function GiftOfTimePage() {
         <Header />
         <main className="flex-1 flex items-center justify-center px-8 py-12">
           {status === "landing" && (
-            <div className="max-w-2xl text-center space-y-4 text-white">
+            <div className="max-w-2xl text-center space-y-5 text-white">
               <p className="text-sm uppercase tracking-[0.25em] text-gold">IMA Gift of Time</p>
-              <h1 className="text-4xl md:text-5xl font-semibold">Welcome to your Gift of Time selection</h1>
-              <p className="text-lg text-zinc-300">
-                Your personal invitation link includes a token parameter. Please use the link you received in your
-                email to view and select your session.
+              <h1 className="text-4xl md:text-5xl font-semibold font-serif">
+                A personal invitation to choose your session
+              </h1>
+              <p className="text-lg text-zinc-200 font-serif">
+                We’ve curated a set of one-to-one experiences for our partners this season. Please open the unique link
+                we sent you to view the sessions and confirm your choice. Each link is personal, so you won’t need to
+                sign in or create an account.
               </p>
-              <p className="text-sm text-zinc-400">
-                Didn’t get a link? Reach out to your IMA contact and we’ll resend your invitation.
+              <p className="text-sm text-zinc-300">
+                If you can’t find your link, contact your IMA partner team or email{" "}
+                <a className="underline text-gold" href="mailto:reception@ima.global">
+                  reception@ima.global
+                </a>{" "}
+                and we’ll resend it right away.
               </p>
             </div>
           )}
