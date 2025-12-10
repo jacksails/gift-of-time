@@ -38,11 +38,11 @@ export default function SelectionBoxShell({
         <div className="text-center mb-12 relative">
           <h1 className="text-5xl font-serif text-gold mb-8 text-balance leading-tight">Your Gift of Time</h1>
           <p className="text-2xl text-zinc-200 mb-6 text-balance">
-            Choose one expert session with the IMA team for Q1 2026.
+            Choose your session with the IMA team.
           </p>
           <div className="max-w-2xl mx-auto space-y-4">
             <p className="text-zinc-300 leading-relaxed">
-              We have curated six sessions designed to help you unlock new ideas, solve real problems and plan for the
+              We have curated a series of sessions designed to help you unlock new ideas, solve real problems and plan for the
               year ahead. Browse the box below and pick the one that will be most useful for you and your team.
             </p>
           </div>
