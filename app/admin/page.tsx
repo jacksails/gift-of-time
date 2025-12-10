@@ -170,7 +170,8 @@ export default function AdminPage() {
     setGiftError((prev) => ({ ...prev, [id]: null }))
     const edit = giftEdits[id] || {}
     try {
-      const updated = await jsonFetch<Gift>(`/api/admin/proxy/gifts/${id}`, {
+      // Use query param instead of path param to avoid Next.js routing issues
+      const updated = await jsonFetch<Gift>(`/api/admin/proxy/gifts?id=${encodeURIComponent(id)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -229,7 +230,8 @@ export default function AdminPage() {
     setClientError(null)
     setClientSaving((p) => ({ ...p, [id]: true }))
     try {
-      const updated = await jsonFetch<ClientRow>(`/api/admin/proxy/clients/${id}`, {
+      // Use query param instead of path param to avoid Next.js routing issues
+      const updated = await jsonFetch<ClientRow>(`/api/admin/proxy/clients?id=${encodeURIComponent(id)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(edit),

@@ -1,10 +1,56 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
 import { prisma } from "@/src/prisma"
 
 async function isAuthed() {
   const cookieStore = await cookies()
   return cookieStore.get("admin_auth")?.value === "1"
+}
+
+export async function PUT(request: NextRequest) {
+  if (!(await isAuthed())) {
+    return NextResponse.json({ error: "UNAUTHORISED" }, { status: 401 })
+  }
+
+  const { searchParams } = new URL(request.url)
+  const id = searchParams.get("id")
+
+  if (!id) {
+    return NextResponse.json({ error: "MISSING_ID" }, { status: 400 })
+  }
+
+  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>
+
+  const data: Record<string, unknown> = {}
+  const isString = (v: unknown) => typeof v === "string" && v.trim().length > 0
+  const isNumber = (v: unknown) => typeof v === "number" && !Number.isNaN(v)
+
+  if (isString(body.title)) data.title = (body.title as string).trim()
+  if (isString(body.strapline)) data.strapline = (body.strapline as string).trim()
+  if (isString(body.description)) data.description = (body.description as string).trim()
+  if (isString(body.ledByName)) data.ledByName = (body.ledByName as string).trim()
+  if (isString(body.ledByRole)) data.ledByRole = (body.ledByRole as string).trim()
+  if (isString(body.duration)) data.duration = (body.duration as string).trim()
+  if (isString(body.format)) data.format = (body.format as string).trim()
+  if (isNumber(body.sortOrder)) data.sortOrder = body.sortOrder
+  if (typeof body.isActive === "boolean") data.isActive = body.isActive
+
+  if (Object.keys(data).length === 0) {
+    return NextResponse.json({ error: "INVALID_INPUT" }, { status: 400 })
+  }
+
+  try {
+    const existing = await prisma.gift.findUnique({ where: { id } })
+    if (!existing) {
+      return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 })
+    }
+
+    const updated = await prisma.gift.update({ where: { id }, data })
+    return NextResponse.json(updated)
+  } catch (error) {
+    console.error("Failed to update gift", error)
+    return NextResponse.json({ error: "SERVER_ERROR" }, { status: 500 })
+  }
 }
 
 export async function GET() {
