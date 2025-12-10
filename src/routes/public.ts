@@ -1,4 +1,5 @@
 import { Router } from "express"
+import type { Prisma } from "@prisma/client"
 
 import { prisma } from "../prisma"
 import type { ClientAndGiftsResponse } from "../types"
@@ -58,7 +59,7 @@ publicRouter.post("/api/select-gift", async (req, res) => {
   try {
     const now = new Date()
 
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const client = await tx.client.findUnique({
         where: { token },
         select: { id: true, selectedGiftId: true },
