@@ -41,6 +41,7 @@ export default function AdminPage() {
   const [clientEdits, setClientEdits] = useState<Record<string, Partial<ClientRow>>>({})
   const [clientSaving, setClientSaving] = useState<Record<string, boolean>>({})
   const [clientDeleting, setClientDeleting] = useState<Record<string, boolean>>({})
+  const [clientError, setClientError] = useState<string | null>(null)
   const [importError, setImportError] = useState<string | null>(null)
   const [importResult, setImportResult] = useState<string | null>(null)
   const [isImporting, setIsImporting] = useState(false)
@@ -223,6 +224,7 @@ export default function AdminPage() {
   const handleSaveClient = async (id: string) => {
     const edit = clientEdits[id]
     if (!edit) return
+    setClientError(null)
     setClientSaving((p) => ({ ...p, [id]: true }))
     try {
       const updated = await jsonFetch<ClientRow>(`/api/admin/proxy/clients/${id}`, {
@@ -236,13 +238,15 @@ export default function AdminPage() {
         return rest
       })
     } catch (err) {
-      setAuthError((err as Error).message || "SERVER_ERROR")
+      setClientError((err as Error).message || "SERVER_ERROR")
     } finally {
       setClientSaving((p) => ({ ...p, [id]: false }))
     }
   }
 
   const handleDeleteClient = async (id: string) => {
+    if (!window.confirm("Delete this client? This cannot be undone.")) return
+    setClientError(null)
     setClientDeleting((p) => ({ ...p, [id]: true }))
     try {
       await jsonFetch<{ success: boolean }>(`/api/admin/proxy/clients/${id}`, {
@@ -254,7 +258,7 @@ export default function AdminPage() {
         return rest
       })
     } catch (err) {
-      setAuthError((err as Error).message || "SERVER_ERROR")
+      setClientError((err as Error).message || "SERVER_ERROR")
     } finally {
       setClientDeleting((p) => ({ ...p, [id]: false }))
     }
@@ -325,67 +329,84 @@ export default function AdminPage() {
     <div className="max-w-6xl mx-auto py-10 px-4 space-y-10">
       <header className="space-y-2">
         <h1 className="text-3xl font-semibold">Gift of Time Admin</h1>
+        <p className="text-sm text-gray-600">Create client invites, manage selections, and edit gifts.</p>
         {loading && <p className="text-sm text-gray-600">Loading...</p>}
       </header>
 
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Create Client Link</h2>
-        <form className="grid grid-cols-1 sm:grid-cols-2 gap-4" onSubmit={handleCreateClient}>
-          <input
-            className="rounded border px-3 py-2"
-            placeholder="First name"
-            value={clientForm.firstName}
-            onChange={(e) => setClientForm((p) => ({ ...p, firstName: e.target.value }))}
-            required
-          />
-          <input
-            className="rounded border px-3 py-2"
-            placeholder="Last name"
-            value={clientForm.lastName}
-            onChange={(e) => setClientForm((p) => ({ ...p, lastName: e.target.value }))}
-            required
-          />
-          <input
-            className="rounded border px-3 py-2"
-            placeholder="Company"
-            value={clientForm.companyName}
-            onChange={(e) => setClientForm((p) => ({ ...p, companyName: e.target.value }))}
-            required
-          />
-          <input
-            className="rounded border px-3 py-2"
-            placeholder="Email"
-            value={clientForm.email}
-            onChange={(e) => setClientForm((p) => ({ ...p, email: e.target.value }))}
-            required
-            type="email"
-          />
-          <div className="sm:col-span-2 flex items-center gap-3">
-            <button type="submit" className="rounded bg-black text-white px-4 py-2">
-              Create link
-            </button>
-            {createError && <p className="text-sm text-red-600">{createError}</p>}
+      <div className="grid gap-8 lg:grid-cols-2">
+        <section className="space-y-4 p-6 rounded-xl border bg-white shadow-sm">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-xl font-semibold">Create Client Link</h2>
             {inviteUrl && (
-              <p className="text-sm">
-                Invite URL: <a className="text-blue-600 underline" href={inviteUrl}>{inviteUrl}</a>
-              </p>
+              <button
+                type="button"
+                className="text-sm text-blue-600 underline"
+                onClick={() => handleCopy(inviteUrl)}
+              >
+                Copy latest invite
+              </button>
             )}
           </div>
-        </form>
-      </section>
+          <form className="grid grid-cols-1 sm:grid-cols-2 gap-4" onSubmit={handleCreateClient}>
+            <input
+              className="rounded border px-3 py-2"
+              placeholder="First name"
+              value={clientForm.firstName}
+              onChange={(e) => setClientForm((p) => ({ ...p, firstName: e.target.value }))}
+              required
+            />
+            <input
+              className="rounded border px-3 py-2"
+              placeholder="Last name"
+              value={clientForm.lastName}
+              onChange={(e) => setClientForm((p) => ({ ...p, lastName: e.target.value }))}
+              required
+            />
+            <input
+              className="rounded border px-3 py-2"
+              placeholder="Company"
+              value={clientForm.companyName}
+              onChange={(e) => setClientForm((p) => ({ ...p, companyName: e.target.value }))}
+              required
+            />
+            <input
+              className="rounded border px-3 py-2"
+              placeholder="Email"
+              value={clientForm.email}
+              onChange={(e) => setClientForm((p) => ({ ...p, email: e.target.value }))}
+              required
+              type="email"
+            />
+            <div className="sm:col-span-2 flex items-center gap-3">
+              <button type="submit" className="rounded bg-black text-white px-4 py-2">
+                Create link
+              </button>
+              {createError && <p className="text-sm text-red-600">{createError}</p>}
+              {inviteUrl && (
+                <p className="text-sm truncate">
+                  Invite URL:{" "}
+                  <a className="text-blue-600 underline" href={inviteUrl}>
+                    {inviteUrl}
+                  </a>
+                </p>
+              )}
+            </div>
+          </form>
+        </section>
 
-      <section className="space-y-3">
-        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <h2 className="text-xl font-semibold">Clients</h2>
-          <div className="flex flex-wrap gap-2 text-sm">
+        <section className="space-y-4 p-6 rounded-xl border bg-white shadow-sm">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Import / Export</h2>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={handleExport}
-              className="rounded border px-3 py-1 hover:bg-gray-50"
+              className="rounded border px-3 py-2 hover:bg-gray-50"
               type="button"
             >
               Export CSV
             </button>
-            <label className="rounded border px-3 py-1 hover:bg-gray-50 cursor-pointer">
+            <label className="rounded border px-3 py-2 hover:bg-gray-50 cursor-pointer">
               <input
                 type="file"
                 accept=".csv,text/csv"
@@ -398,36 +419,45 @@ export default function AdminPage() {
               />
               Import CSV
             </label>
-            {isImporting && <span className="text-gray-600">Importing…</span>}
-            {importError && <span className="text-red-600">{importError}</span>}
-            {importResult && <span className="text-green-700">{importResult}</span>}
+            {isImporting && <span className="text-gray-600 text-sm">Importing…</span>}
+            {importError && <span className="text-red-600 text-sm">{importError}</span>}
+            {importResult && <span className="text-green-700 text-sm">{importResult}</span>}
+          </div>
+        </section>
+      </div>
+
+      <section className="space-y-3">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <h2 className="text-xl font-semibold">Clients</h2>
+          <div className="flex flex-wrap gap-2 text-sm">
+            {clientError && <span className="text-red-600">{clientError}</span>}
           </div>
         </div>
-        <div className="border rounded divide-y">
+        <div className="grid gap-4 md:grid-cols-2">
           {clients.map((client) => {
             const edit = clientEdits[client.id] || {}
             const invite = inviteFor(client.token as any || "")
             return (
-              <div key={client.id} className="p-4 space-y-2">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                  <div className="space-y-1">
-                    <div className="font-medium">
+              <div key={client.id} className="p-4 rounded-xl border bg-white shadow-sm space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="space-y-2 w-full">
+                    <div className="flex flex-wrap gap-2">
                       <input
-                        className="rounded border px-2 py-1 mr-2 w-40"
+                        className="rounded border px-3 py-2 w-40"
                         defaultValue={client.firstName}
                         onChange={(e) =>
                           setClientEdits((p) => ({ ...p, [client.id]: { ...p[client.id], firstName: e.target.value } }))
                         }
                       />
                       <input
-                        className="rounded border px-2 py-1 mr-2 w-40"
+                        className="rounded border px-3 py-2 w-40"
                         defaultValue={client.lastName}
                         onChange={(e) =>
                           setClientEdits((p) => ({ ...p, [client.id]: { ...p[client.id], lastName: e.target.value } }))
                         }
                       />
                       <input
-                        className="rounded border px-2 py-1 mt-2 w-64"
+                        className="rounded border px-3 py-2 w-60"
                         defaultValue={client.companyName}
                         onChange={(e) =>
                           setClientEdits((p) => ({
@@ -438,7 +468,7 @@ export default function AdminPage() {
                       />
                     </div>
                     <input
-                      className="rounded border px-2 py-1 w-64"
+                      className="rounded border px-3 py-2 w-full"
                       defaultValue={client.email}
                       onChange={(e) =>
                         setClientEdits((p) => ({ ...p, [client.id]: { ...p[client.id], email: e.target.value } }))
@@ -453,9 +483,15 @@ export default function AdminPage() {
                       >
                         Copy
                       </button>
+                      <a
+                        className="text-blue-600 underline"
+                        href={`mailto:${client.email}?subject=Your%20Gift%20of%20Time%20invitation&body=${encodeURIComponent(invite)}`}
+                      >
+                        Email
+                      </a>
                     </div>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2 text-sm">
+                  <div className="text-sm text-right min-w-[180px]">
                     {client.hasSelectedGift ? (
                       <span className="text-green-700">
                         Selected: {client.selectedGiftTitle || client.selectedGiftId}{" "}
@@ -468,31 +504,25 @@ export default function AdminPage() {
                 </div>
                 <div className="flex flex-wrap gap-2 text-sm">
                   <button
-                    className="rounded border px-3 py-1 hover:bg-gray-50"
+                    className="rounded border px-3 py-2 hover:bg-gray-50"
                     onClick={() => handleSaveClient(client.id)}
                     disabled={clientSaving[client.id]}
                   >
                     {clientSaving[client.id] ? "Saving…" : "Save"}
                   </button>
                   <button
-                    className="rounded border px-3 py-1 hover:bg-gray-50 text-red-600"
+                    className="rounded border px-3 py-2 hover:bg-gray-50 text-red-600"
                     onClick={() => handleDeleteClient(client.id)}
                     disabled={clientDeleting[client.id]}
                   >
                     {clientDeleting[client.id] ? "Deleting…" : "Delete"}
                   </button>
                   <button
-                    className="rounded border px-3 py-1 hover:bg-gray-50"
+                    className="rounded border px-3 py-2 hover:bg-gray-50"
                     onClick={() => handleCopy(invite)}
                   >
                     Copy invite link
                   </button>
-                  <a
-                    className="rounded border px-3 py-1 hover:bg-gray-50"
-                    href={`mailto:${client.email}?subject=Your%20Gift%20of%20Time%20invitation&body=${encodeURIComponent(invite)}`}
-                  >
-                    Email link
-                  </a>
                 </div>
               </div>
             )
