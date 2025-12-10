@@ -44,7 +44,7 @@ export default function GiftConfirmationView({ gift, client }: GiftConfirmationV
             </p>
 
             <div className="flex gap-6 text-sm text-zinc-400">
-              {gift.durationMinutes && (
+              {gift.duration && (
                 <div className="flex items-center gap-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -61,7 +61,7 @@ export default function GiftConfirmationView({ gift, client }: GiftConfirmationV
                       d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  <span>{gift.durationMinutes} minutes</span>
+                  <span>{gift.duration}</span>
                 </div>
               )}
               {gift.format && (

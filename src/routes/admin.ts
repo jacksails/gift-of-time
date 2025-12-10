@@ -117,7 +117,7 @@ adminRouter.put("/gifts/:id", async (req, res) => {
     description,
     ledByName,
     ledByRole,
-    durationMinutes,
+    duration,
     format,
     sortOrder,
     isActive,
@@ -134,7 +134,7 @@ adminRouter.put("/gifts/:id", async (req, res) => {
   if (isString(ledByName)) data.ledByName = ledByName.trim()
   if (isString(ledByRole)) data.ledByRole = ledByRole.trim()
   if (isString(format)) data.format = format.trim()
-  if (isNumber(durationMinutes)) data.durationMinutes = durationMinutes
+  if (isString(duration)) data.duration = duration.trim()
   if (isNumber(sortOrder)) data.sortOrder = sortOrder
   if (typeof isActive === "boolean") data.isActive = isActive
 

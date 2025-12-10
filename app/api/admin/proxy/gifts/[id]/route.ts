@@ -25,7 +25,8 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
   if (isString(body.ledByName)) data.ledByName = (body.ledByName as string).trim()
   if (isString(body.ledByRole)) data.ledByRole = (body.ledByRole as string).trim()
   if (isString(body.format)) data.format = (body.format as string).trim()
-  if (isNumber(body.durationMinutes)) data.durationMinutes = body.durationMinutes
+  if (isString(body.duration)) data.duration = (body.duration as string).trim()
+  if (body.duration === null || body.duration === "") data.duration = null
   if (isNumber(body.sortOrder)) data.sortOrder = body.sortOrder
   if (typeof body.isActive === "boolean") data.isActive = body.isActive
 

@@ -122,7 +122,7 @@ export default function GiftDetailModal({
 
               {/* Details */}
               <div className="flex gap-6 mb-8 text-sm">
-                {gift.durationMinutes && (
+                {gift.duration && (
                   <div className="flex items-center gap-2 text-zinc-400">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -139,7 +139,7 @@ export default function GiftDetailModal({
                         d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                       />
                     </svg>
-                    <span>{gift.durationMinutes} minutes</span>
+                    <span>{gift.duration}</span>
                   </div>
                 )}
                 {gift.format && (

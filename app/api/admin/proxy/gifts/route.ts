@@ -47,12 +47,7 @@ export async function POST(request: Request) {
         description: (body.description as string).trim(),
         ledByName: (body.ledByName as string).trim(),
         ledByRole: (body.ledByRole as string).trim(),
-        durationMinutes:
-          typeof body.durationMinutes === "number"
-            ? body.durationMinutes
-            : body.durationMinutes
-              ? Number(body.durationMinutes) || null
-              : null,
+        duration: typeof body.duration === "string" ? (body.duration as string).trim() || null : null,
         format: typeof body.format === "string" ? body.format.trim() || null : null,
         sortOrder:
           typeof body.sortOrder === "number"

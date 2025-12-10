@@ -175,8 +175,7 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...edit,
-          durationMinutes:
-            typeof edit.durationMinutes === "string" ? Number(edit.durationMinutes) || null : edit.durationMinutes,
+          duration: typeof edit.duration === "string" ? edit.duration.trim() || null : edit.duration,
           sortOrder: typeof edit.sortOrder === "string" ? Number(edit.sortOrder) || 0 : edit.sortOrder,
         }),
       })
@@ -202,10 +201,7 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...giftCreate,
-          durationMinutes:
-            typeof giftCreate.durationMinutes === "string"
-              ? Number(giftCreate.durationMinutes) || null
-              : giftCreate.durationMinutes,
+          duration: typeof giftCreate.duration === "string" ? giftCreate.duration.trim() || null : giftCreate.duration,
           sortOrder:
             typeof giftCreate.sortOrder === "string" ? Number(giftCreate.sortOrder) || gifts.length + 1 : giftCreate.sortOrder,
         }),
@@ -684,20 +680,9 @@ export default function AdminPage() {
                   />
                   <input
                     className="rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
-                    placeholder="Duration (minutes)"
-                    type="number"
-                    value={giftCreate.durationMinutes ?? ""}
-                    onChange={(e) => {
-                      const val = e.target.value
-                      if (!val) {
-                        setGiftCreate((p) => {
-                          const { durationMinutes: _, ...rest } = p
-                          return rest
-                        })
-                      } else {
-                        setGiftCreate((p) => ({ ...p, durationMinutes: Number(val) }))
-                      }
-                    }}
+                    placeholder="Duration (e.g. 90 mins, Half day)"
+                    value={giftCreate.duration ?? ""}
+                    onChange={(e) => setGiftCreate((p) => ({ ...p, duration: e.target.value }))}
                   />
                   <input
                     className="rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"

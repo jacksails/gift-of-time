@@ -15,7 +15,7 @@ model Gift {
   description     String
   ledByName       String
   ledByRole       String
-  durationMinutes Int?
+  duration        String?
   format          String?
   sortOrder       Int      @default(0)
   isActive        Boolean  @default(true)

@@ -6,7 +6,7 @@ export type Gift = {
   description: string
   ledByName: string
   ledByRole: string
-  durationMinutes?: number
+  duration?: string
   format?: string
   sortOrder: number
   isActive: boolean

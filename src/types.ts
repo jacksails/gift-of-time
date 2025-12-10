@@ -6,7 +6,7 @@ export interface GiftResponse {
   description: string
   ledByName: string
   ledByRole: string
-  durationMinutes: number | null
+  duration: string | null
   format: string | null
   sortOrder: number
   isActive: boolean
