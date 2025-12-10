@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client"
 import { Router } from "express"
 import crypto from "crypto"
 
@@ -91,6 +92,65 @@ adminRouter.get("/clients", async (_req, res) => {
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error("Failed to list clients", error)
+    return res.status(500).json({ error: "SERVER_ERROR" })
+  }
+})
+
+adminRouter.get("/gifts", async (_req, res) => {
+  try {
+    const gifts = await prisma.gift.findMany({
+      orderBy: { sortOrder: "asc" },
+    })
+    return res.json(gifts)
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error("Failed to list gifts", error)
+    return res.status(500).json({ error: "SERVER_ERROR" })
+  }
+})
+
+adminRouter.put("/gifts/:id", async (req, res) => {
+  const { id } = req.params
+  const {
+    title,
+    strapline,
+    description,
+    ledByName,
+    ledByRole,
+    durationMinutes,
+    format,
+    sortOrder,
+    isActive,
+  } = req.body ?? {}
+
+  const data: Prisma.GiftUpdateInput = {}
+
+  const isString = (v: unknown) => typeof v === "string" && v.trim().length > 0
+  const isNumber = (v: unknown) => typeof v === "number" && !Number.isNaN(v)
+
+  if (isString(title)) data.title = title.trim()
+  if (isString(strapline)) data.strapline = strapline.trim()
+  if (isString(description)) data.description = description.trim()
+  if (isString(ledByName)) data.ledByName = ledByName.trim()
+  if (isString(ledByRole)) data.ledByRole = ledByRole.trim()
+  if (isString(format)) data.format = format.trim()
+  if (isNumber(durationMinutes)) data.durationMinutes = durationMinutes
+  if (isNumber(sortOrder)) data.sortOrder = sortOrder
+  if (typeof isActive === "boolean") data.isActive = isActive
+
+  if (Object.keys(data).length === 0) {
+    return res.status(400).json({ error: "INVALID_INPUT" })
+  }
+
+  try {
+    const updated = await prisma.gift.update({
+      where: { id },
+      data,
+    })
+    return res.json(updated)
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error("Failed to update gift", error)
     return res.status(500).json({ error: "SERVER_ERROR" })
   }
 })
