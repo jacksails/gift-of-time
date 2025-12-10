@@ -34,8 +34,51 @@ export default function SelectionBoxShell({
     <div className="w-full max-w-5xl">
       <div className="bg-zinc-950/80 backdrop-blur border-2 border-gold/50 rounded-2xl shadow-2xl shadow-gold/10 p-12 relative animate-fade-in-scale">
         <div className="absolute inset-0 rounded-2xl shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)] pointer-events-none" />
+        
+        {/* Decorative ribbon bow - top right corner */}
+        <div className="absolute -top-3 -right-3 w-16 h-16 pointer-events-none" aria-hidden="true">
+          <svg viewBox="0 0 64 64" className="w-full h-full drop-shadow-lg">
+            {/* Ribbon loops */}
+            <path 
+              d="M32 32 C20 20, 10 25, 15 35 C20 45, 30 40, 32 32" 
+              fill="none" 
+              stroke="var(--cranberry)" 
+              strokeWidth="3"
+              className="opacity-80"
+            />
+            <path 
+              d="M32 32 C44 20, 54 25, 49 35 C44 45, 34 40, 32 32" 
+              fill="none" 
+              stroke="var(--cranberry)" 
+              strokeWidth="3"
+              className="opacity-80"
+            />
+            {/* Center knot */}
+            <circle cx="32" cy="32" r="4" fill="var(--cranberry)" className="opacity-90" />
+            {/* Ribbon tails */}
+            <path 
+              d="M32 36 Q28 50, 22 58" 
+              fill="none" 
+              stroke="var(--cranberry)" 
+              strokeWidth="2.5"
+              className="opacity-70"
+            />
+            <path 
+              d="M32 36 Q36 50, 42 58" 
+              fill="none" 
+              stroke="var(--cranberry)" 
+              strokeWidth="2.5"
+              className="opacity-70"
+            />
+          </svg>
+        </div>
 
         <div className="text-center mb-12 relative">
+          <p className="text-xs uppercase tracking-[0.3em] text-zinc-500 mb-4">
+            <span className="text-cranberry">✦</span>
+            {" "}This Christmas{" "}
+            <span className="text-forest">✦</span>
+          </p>
           <h1 className="text-5xl font-serif text-gold mb-8 text-balance leading-tight">Your Gift of Time</h1>
           <p className="text-2xl text-zinc-200 mb-6 text-balance">
             Choose your session with the IMA team.

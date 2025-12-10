@@ -5,7 +5,7 @@ import ClientLayout from "./_client-layout"
 
 export const metadata: Metadata = {
   title: "Gift of Time 2025 | IMA",
-  description: "Choose your exclusive Gift of Time session with IMA experts for Q1 2026",
+  description: "Choose your exclusive Gift of Time session with our IMA teams.",
   generator: "v0.app",
   icons: {
     icon: {
