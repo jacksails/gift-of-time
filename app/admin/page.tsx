@@ -36,6 +36,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false)
   const [inviteUrl, setInviteUrl] = useState<string | null>(null)
   const [createError, setCreateError] = useState<string | null>(null)
+  const [giftCreateError, setGiftCreateError] = useState<string | null>(null)
 
   const [clientForm, setClientForm] = useState({
     firstName: "",
@@ -45,6 +46,17 @@ export default function AdminPage() {
   })
 
   const [giftEdits, setGiftEdits] = useState<Record<string, GiftFormState>>({})
+  const [giftCreate, setGiftCreate] = useState<GiftFormState>({
+    slug: "",
+    title: "",
+    strapline: "",
+    description: "",
+    ledByName: "",
+    ledByRole: "",
+    format: "",
+    sortOrder: gifts.length + 1,
+    isActive: true,
+  })
   const [giftSaving, setGiftSaving] = useState<Record<string, boolean>>({})
   const [giftError, setGiftError] = useState<Record<string, string | null>>({})
 
@@ -158,6 +170,40 @@ export default function AdminPage() {
     }
   }
 
+  const handleCreateGift = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setGiftCreateError(null)
+    try {
+      const created = await jsonFetch<Gift>(`/api/admin/proxy/gifts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...giftCreate,
+          durationMinutes:
+            typeof giftCreate.durationMinutes === "string"
+              ? Number(giftCreate.durationMinutes) || null
+              : giftCreate.durationMinutes,
+          sortOrder:
+            typeof giftCreate.sortOrder === "string" ? Number(giftCreate.sortOrder) || gifts.length + 1 : giftCreate.sortOrder,
+        }),
+      })
+      setGifts((prev) => [...prev, created])
+      setGiftCreate({
+        slug: "",
+        title: "",
+        strapline: "",
+        description: "",
+        ledByName: "",
+        ledByRole: "",
+        format: "",
+        sortOrder: (gifts.length || 0) + 1,
+        isActive: true,
+      })
+    } catch (err) {
+      setGiftCreateError((err as Error).message || "SERVER_ERROR")
+    }
+  }
+
   if (authed === false) {
     return (
       <div className="max-w-md mx-auto py-12 px-4">
@@ -265,6 +311,112 @@ export default function AdminPage() {
 
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">Gifts</h2>
+        <div className="rounded border p-4 space-y-3">
+          <h3 className="font-semibold">Add Gift</h3>
+          <form className="grid grid-cols-1 md:grid-cols-2 gap-3" onSubmit={handleCreateGift}>
+            <input
+              className="rounded border px-3 py-2"
+              placeholder="Slug"
+              value={giftCreate.slug ?? ""}
+              onChange={(e) => setGiftCreate((p) => ({ ...p, slug: e.target.value }))}
+              required
+            />
+            <input
+              className="rounded border px-3 py-2"
+              placeholder="Title"
+              value={giftCreate.title ?? ""}
+              onChange={(e) => setGiftCreate((p) => ({ ...p, title: e.target.value }))}
+              required
+            />
+            <input
+              className="rounded border px-3 py-2"
+              placeholder="Strapline"
+              value={giftCreate.strapline ?? ""}
+              onChange={(e) => setGiftCreate((p) => ({ ...p, strapline: e.target.value }))}
+              required
+            />
+            <input
+              className="rounded border px-3 py-2"
+              placeholder="Led by name"
+              value={giftCreate.ledByName ?? ""}
+              onChange={(e) => setGiftCreate((p) => ({ ...p, ledByName: e.target.value }))}
+              required
+            />
+            <input
+              className="rounded border px-3 py-2"
+              placeholder="Led by role"
+              value={giftCreate.ledByRole ?? ""}
+              onChange={(e) => setGiftCreate((p) => ({ ...p, ledByRole: e.target.value }))}
+              required
+            />
+            <input
+              className="rounded border px-3 py-2"
+              placeholder="Format"
+              value={giftCreate.format ?? ""}
+              onChange={(e) => setGiftCreate((p) => ({ ...p, format: e.target.value }))}
+            />
+            <input
+              className="rounded border px-3 py-2"
+              placeholder="Duration (minutes)"
+              value={giftCreate.durationMinutes ?? ""}
+              onChange={(e) =>
+                setGiftCreate((p) => {
+                  const val = e.target.value
+                  if (!val) {
+                    const { durationMinutes, ...rest } = p
+                    return rest
+                  }
+                  const num = Number(val)
+                  if (Number.isNaN(num)) {
+                    return p
+                  }
+                  return { ...p, durationMinutes: num }
+                })
+              }
+            />
+            <input
+              className="rounded border px-3 py-2"
+              placeholder="Sort order"
+              value={giftCreate.sortOrder ?? ""}
+              onChange={(e) =>
+                setGiftCreate((p) => {
+                  const val = e.target.value
+                  if (!val) {
+                    const { sortOrder, ...rest } = p
+                    return rest
+                  }
+                  const num = Number(val)
+                  if (Number.isNaN(num)) {
+                    return p
+                  }
+                  return { ...p, sortOrder: num }
+                })
+              }
+            />
+            <textarea
+              className="rounded border px-3 py-2 md:col-span-2"
+              placeholder="Description"
+              value={giftCreate.description ?? ""}
+              onChange={(e) => setGiftCreate((p) => ({ ...p, description: e.target.value }))}
+              rows={3}
+              required
+            />
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={giftCreate.isActive ?? true}
+                onChange={(e) => setGiftCreate((p) => ({ ...p, isActive: e.target.checked }))}
+              />
+              Active
+            </label>
+            <div className="md:col-span-2 flex items-center gap-3">
+              <button type="submit" className="rounded bg-black text-white px-4 py-2">
+                Add gift
+              </button>
+              {giftCreateError && <p className="text-sm text-red-600">{giftCreateError}</p>}
+            </div>
+          </form>
+        </div>
         <div className="space-y-4">
           {giftsSorted.map((gift) => {
             const edit = giftEdits[gift.id] || {}

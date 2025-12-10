@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
-
-const API_BASE =
-  process.env.API_BASE_URL || process.env.VITE_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || ""
+import { prisma } from "@/src/prisma"
 
 async function isAuthed() {
   const cookieStore = await cookies()
@@ -14,18 +12,62 @@ export async function GET() {
     return NextResponse.json({ error: "UNAUTHORISED" }, { status: 401 })
   }
 
-  const res = await fetch(`${API_BASE}/api/admin/gifts`, {
-    headers: {
-      "x-admin-key": process.env.ADMIN_API_KEY ?? "",
-    },
-    cache: "no-store",
-  })
-
-  if (!res.ok) {
+  try {
+    const gifts = await prisma.gift.findMany({
+      orderBy: { sortOrder: "asc" },
+    })
+    return NextResponse.json(gifts)
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error("Failed to list gifts", error)
     return NextResponse.json({ error: "SERVER_ERROR" }, { status: 500 })
   }
+}
 
-  const data = await res.json()
-  return NextResponse.json(data)
+export async function POST(request: Request) {
+  if (!(await isAuthed())) {
+    return NextResponse.json({ error: "UNAUTHORISED" }, { status: 401 })
+  }
+
+  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>
+
+  const requiredStrings = ["slug", "title", "strapline", "description", "ledByName", "ledByRole"]
+  for (const key of requiredStrings) {
+    if (typeof body[key] !== "string" || !(body[key] as string).trim()) {
+      return NextResponse.json({ error: "INVALID_INPUT" }, { status: 400 })
+    }
+  }
+
+  try {
+    const gift = await prisma.gift.create({
+      data: {
+        slug: (body.slug as string).trim(),
+        title: (body.title as string).trim(),
+        strapline: (body.strapline as string).trim(),
+        description: (body.description as string).trim(),
+        ledByName: (body.ledByName as string).trim(),
+        ledByRole: (body.ledByRole as string).trim(),
+        durationMinutes:
+          typeof body.durationMinutes === "number"
+            ? body.durationMinutes
+            : body.durationMinutes
+              ? Number(body.durationMinutes) || null
+              : null,
+        format: typeof body.format === "string" ? body.format.trim() || null : null,
+        sortOrder:
+          typeof body.sortOrder === "number"
+            ? body.sortOrder
+            : body.sortOrder
+              ? Number(body.sortOrder) || 0
+              : 0,
+        isActive: typeof body.isActive === "boolean" ? body.isActive : true,
+      },
+    })
+    return NextResponse.json(gift)
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error("Failed to create gift", error)
+    return NextResponse.json({ error: "SERVER_ERROR" }, { status: 500 })
+  }
 }
 

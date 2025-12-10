@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
-
-const API_BASE =
-  process.env.API_BASE_URL || process.env.VITE_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || ""
+import crypto from "crypto"
+import { prisma } from "@/src/prisma"
 
 async function isAuthed() {
   const cookieStore = await cookies()
@@ -14,19 +13,32 @@ export async function GET() {
     return NextResponse.json({ error: "UNAUTHORISED" }, { status: 401 })
   }
 
-  const res = await fetch(`${API_BASE}/api/admin/clients`, {
-    headers: {
-      "x-admin-key": process.env.ADMIN_API_KEY ?? "",
-    },
-    cache: "no-store",
-  })
+  try {
+    const clients = await prisma.client.findMany({
+      include: {
+        selectedGift: { select: { id: true, title: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    })
 
-  if (!res.ok) {
+    const result = clients.map((client) => ({
+      id: client.id,
+      firstName: client.firstName,
+      lastName: client.lastName,
+      companyName: client.companyName,
+      email: client.email,
+      hasSelectedGift: client.selectedGiftId != null,
+      selectedGiftId: client.selectedGiftId,
+      selectedGiftTitle: client.selectedGift?.title ?? null,
+      selectedAt: client.selectedAt,
+    }))
+
+    return NextResponse.json(result)
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error("Failed to list clients", error)
     return NextResponse.json({ error: "SERVER_ERROR" }, { status: 500 })
   }
-
-  const data = await res.json()
-  return NextResponse.json(data)
 }
 
 export async function POST(request: Request) {
@@ -34,23 +46,60 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "UNAUTHORISED" }, { status: 401 })
   }
 
-  const body = await request.json()
+  const { firstName, lastName, companyName, email } = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >
 
-  const res = await fetch(`${API_BASE}/api/admin/clients`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-admin-key": process.env.ADMIN_API_KEY ?? "",
-    },
-    body: JSON.stringify(body),
-  })
+  const isValidString = (val: unknown) => typeof val === "string" && val.trim().length > 0
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-  if (!res.ok) {
-    const errorBody = await res.json().catch(() => ({}))
-    return NextResponse.json(errorBody || { error: "SERVER_ERROR" }, { status: res.status })
+  if (
+    !isValidString(firstName) ||
+    !isValidString(lastName) ||
+    !isValidString(companyName) ||
+    !isValidString(email) ||
+    !emailRegex.test(email as string)
+  ) {
+    return NextResponse.json({ error: "INVALID_INPUT" }, { status: 400 })
   }
 
-  const data = await res.json()
-  return NextResponse.json(data)
+  const token = crypto.randomBytes(24).toString("hex")
+
+  try {
+    const client = await prisma.client.create({
+      data: {
+        firstName: (firstName as string).trim(),
+        lastName: (lastName as string).trim(),
+        companyName: (companyName as string).trim(),
+        email: (email as string).trim(),
+        token,
+      },
+    })
+
+    const baseUrl =
+      process.env.BASE_URL ||
+      process.env.API_BASE_URL ||
+      process.env.VITE_API_BASE_URL ||
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      ""
+    const inviteUrl = `${baseUrl}?t=${encodeURIComponent(token)}`
+
+    return NextResponse.json({
+      client: {
+        id: client.id,
+        firstName: client.firstName,
+        lastName: client.lastName,
+        companyName: client.companyName,
+        email: client.email,
+        token: client.token,
+      },
+      inviteUrl,
+    })
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error("Failed to create client", error)
+    return NextResponse.json({ error: "SERVER_ERROR" }, { status: 500 })
+  }
 }
 
