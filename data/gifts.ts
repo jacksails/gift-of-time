@@ -1,0 +1,88 @@
+import type { Gift } from "@/types/gift"
+
+export const gifts: Gift[] = [
+  {
+    id: "1",
+    slug: "ai-opportunity-clinic",
+    title: "AI Opportunity Clinic",
+    strapline: "Discover how AI can transform your business operations",
+    description:
+      "Join us for an in-depth consultation on identifying and implementing AI opportunities within your organization. We'll explore practical use cases, discuss implementation strategies, and help you build a roadmap for AI adoption that aligns with your business objectives.",
+    ledByName: "Sarah Chen",
+    ledByRole: "Head of AI Strategy",
+    durationMinutes: 90,
+    format: "Virtual consultation",
+    sortOrder: 1,
+    isActive: true,
+  },
+  {
+    id: "2",
+    slug: "experience-strategy-sprint",
+    title: "Experience Strategy Sprint",
+    strapline: "Reimagine your customer experience from the ground up",
+    description:
+      "A focused session to map out your customer journey and identify key opportunities for improvement. We'll use proven frameworks to analyze touchpoints, pain points, and moments that matter, creating a prioritized action plan for enhancing your customer experience.",
+    ledByName: "Marcus Rodriguez",
+    ledByRole: "Experience Design Director",
+    durationMinutes: 120,
+    format: "In-person workshop",
+    sortOrder: 2,
+    isActive: true,
+  },
+  {
+    id: "3",
+    slug: "creative-automation-deep-dive",
+    title: "Creative Automation Deep Dive",
+    strapline: "Scale your creative output without sacrificing quality",
+    description:
+      "Learn how to implement creative automation systems that maintain brand consistency while dramatically increasing output. We'll cover tools, workflows, and best practices for automating repetitive creative tasks, freeing your team to focus on strategic work.",
+    ledByName: "Priya Kapoor",
+    ledByRole: "Creative Technology Lead",
+    durationMinutes: 90,
+    format: "Virtual demo and consultation",
+    sortOrder: 3,
+    isActive: true,
+  },
+  {
+    id: "4",
+    slug: "retail-innovation-roundtable",
+    title: "Retail Innovation Roundtable",
+    strapline: "Explore the future of retail and commerce",
+    description:
+      "An exclusive roundtable discussion on emerging retail trends, from phygital experiences to social commerce. We'll analyze successful case studies, discuss implementation challenges, and help you identify innovations that could give your retail strategy a competitive edge.",
+    ledByName: "James Sullivan",
+    ledByRole: "Retail Strategy Partner",
+    durationMinutes: 60,
+    format: "Virtual roundtable",
+    sortOrder: 4,
+    isActive: true,
+  },
+  {
+    id: "5",
+    slug: "brand-measurement-lab",
+    title: "Brand Measurement Lab",
+    strapline: "Prove the value of your brand investments",
+    description:
+      "A practical session on measuring brand health and demonstrating ROI. We'll review your current metrics, introduce advanced measurement frameworks, and help you build a dashboard that tells the story of your brand's impact on business outcomes.",
+    ledByName: "Dr. Emma Watson",
+    ledByRole: "Brand Analytics Director",
+    durationMinutes: 90,
+    format: "Virtual consultation",
+    sortOrder: 5,
+    isActive: true,
+  },
+  {
+    id: "6",
+    slug: "future-customer-journeys",
+    title: "Future of Customer Journeys Session",
+    strapline: "Design experiences for tomorrow's consumers",
+    description:
+      "Look ahead to emerging patterns in consumer behavior and technology. We'll explore how trends like ambient computing, predictive personalization, and ethical data use are reshaping customer journeys, and help you prepare your strategy for what's next.",
+    ledByName: "Alex Thornton",
+    ledByRole: "Futures and Innovation Lead",
+    durationMinutes: 75,
+    format: "Virtual session",
+    sortOrder: 6,
+    isActive: true,
+  },
+]
