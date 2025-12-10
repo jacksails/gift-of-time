@@ -9,6 +9,7 @@ type ClientRow = {
   lastName: string
   companyName: string
   email: string
+  token: string
   hasSelectedGift: boolean
   selectedGiftId: string | null
   selectedGiftTitle: string | null
@@ -37,6 +38,12 @@ export default function AdminPage() {
   const [inviteUrl, setInviteUrl] = useState<string | null>(null)
   const [createError, setCreateError] = useState<string | null>(null)
   const [giftCreateError, setGiftCreateError] = useState<string | null>(null)
+  const [clientEdits, setClientEdits] = useState<Record<string, Partial<ClientRow>>>({})
+  const [clientSaving, setClientSaving] = useState<Record<string, boolean>>({})
+  const [clientDeleting, setClientDeleting] = useState<Record<string, boolean>>({})
+  const [importError, setImportError] = useState<string | null>(null)
+  const [importResult, setImportResult] = useState<string | null>(null)
+  const [isImporting, setIsImporting] = useState(false)
 
   const [clientForm, setClientForm] = useState({
     firstName: "",
@@ -133,6 +140,15 @@ export default function AdminPage() {
     [gifts],
   )
 
+  const baseUrl =
+    process.env.BASE_URL ||
+    process.env.API_BASE_URL ||
+    process.env.VITE_API_BASE_URL ||
+    process.env.NEXT_PUBLIC_API_BASE_URL ||
+    (typeof window !== "undefined" ? window.location.origin : "")
+
+  const inviteFor = (token: string) => (baseUrl ? `${baseUrl}?t=${encodeURIComponent(token)}` : token)
+
   const handleGiftChange = (id: string, field: keyof GiftFormState, value: unknown) => {
     setGiftEdits((prev) => ({
       ...prev,
@@ -202,6 +218,82 @@ export default function AdminPage() {
     } catch (err) {
       setGiftCreateError((err as Error).message || "SERVER_ERROR")
     }
+  }
+
+  const handleSaveClient = async (id: string) => {
+    const edit = clientEdits[id]
+    if (!edit) return
+    setClientSaving((p) => ({ ...p, [id]: true }))
+    try {
+      const updated = await jsonFetch<ClientRow>(`/api/admin/proxy/clients/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(edit),
+      })
+      setClients((prev) => prev.map((c) => (c.id === id ? { ...c, ...updated } : c)))
+      setClientEdits((p) => {
+        const { [id]: _, ...rest } = p
+        return rest
+      })
+    } catch (err) {
+      setAuthError((err as Error).message || "SERVER_ERROR")
+    } finally {
+      setClientSaving((p) => ({ ...p, [id]: false }))
+    }
+  }
+
+  const handleDeleteClient = async (id: string) => {
+    setClientDeleting((p) => ({ ...p, [id]: true }))
+    try {
+      await jsonFetch<{ success: boolean }>(`/api/admin/proxy/clients/${id}`, {
+        method: "DELETE",
+      })
+      setClients((prev) => prev.filter((c) => c.id !== id))
+      setClientEdits((p) => {
+        const { [id]: _, ...rest } = p
+        return rest
+      })
+    } catch (err) {
+      setAuthError((err as Error).message || "SERVER_ERROR")
+    } finally {
+      setClientDeleting((p) => ({ ...p, [id]: false }))
+    }
+  }
+
+  const handleCopy = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch {
+      // no-op
+    }
+  }
+
+  const handleImport = async (file: File) => {
+    setIsImporting(true)
+    setImportError(null)
+    setImportResult(null)
+    try {
+      const text = await file.text()
+      const res = await fetch("/api/admin/proxy/clients/import", {
+        method: "POST",
+        headers: { "Content-Type": "text/csv" },
+        body: text,
+      })
+      const body = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        throw new Error(body?.error || "SERVER_ERROR")
+      }
+      setImportResult(`Created ${body.createdCount || 0}${body.errors?.length ? `, errors: ${body.errors.length}` : ""}`)
+      await loadData()
+    } catch (err) {
+      setImportError((err as Error).message || "SERVER_ERROR")
+    } finally {
+      setIsImporting(false)
+    }
+  }
+
+  const handleExport = () => {
+    window.location.href = "/api/admin/proxy/clients/export"
   }
 
   if (authed === false) {
@@ -283,28 +375,128 @@ export default function AdminPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold">Clients</h2>
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <h2 className="text-xl font-semibold">Clients</h2>
+          <div className="flex flex-wrap gap-2 text-sm">
+            <button
+              onClick={handleExport}
+              className="rounded border px-3 py-1 hover:bg-gray-50"
+              type="button"
+            >
+              Export CSV
+            </button>
+            <label className="rounded border px-3 py-1 hover:bg-gray-50 cursor-pointer">
+              <input
+                type="file"
+                accept=".csv,text/csv"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) handleImport(file)
+                  e.target.value = ""
+                }}
+              />
+              Import CSV
+            </label>
+            {isImporting && <span className="text-gray-600">Importing…</span>}
+            {importError && <span className="text-red-600">{importError}</span>}
+            {importResult && <span className="text-green-700">{importResult}</span>}
+          </div>
+        </div>
         <div className="border rounded divide-y">
-          {clients.map((client) => (
-            <div key={client.id} className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div>
-                <p className="font-medium">
-                  {client.firstName} {client.lastName} • {client.companyName}
-                </p>
-                <p className="text-sm text-gray-600">{client.email}</p>
+          {clients.map((client) => {
+            const edit = clientEdits[client.id] || {}
+            const invite = inviteFor(client.token as any || "")
+            return (
+              <div key={client.id} className="p-4 space-y-2">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div className="space-y-1">
+                    <div className="font-medium">
+                      <input
+                        className="rounded border px-2 py-1 mr-2 w-40"
+                        defaultValue={client.firstName}
+                        onChange={(e) =>
+                          setClientEdits((p) => ({ ...p, [client.id]: { ...p[client.id], firstName: e.target.value } }))
+                        }
+                      />
+                      <input
+                        className="rounded border px-2 py-1 mr-2 w-40"
+                        defaultValue={client.lastName}
+                        onChange={(e) =>
+                          setClientEdits((p) => ({ ...p, [client.id]: { ...p[client.id], lastName: e.target.value } }))
+                        }
+                      />
+                      <input
+                        className="rounded border px-2 py-1 mt-2 w-64"
+                        defaultValue={client.companyName}
+                        onChange={(e) =>
+                          setClientEdits((p) => ({
+                            ...p,
+                            [client.id]: { ...p[client.id], companyName: e.target.value },
+                          }))
+                        }
+                      />
+                    </div>
+                    <input
+                      className="rounded border px-2 py-1 w-64"
+                      defaultValue={client.email}
+                      onChange={(e) =>
+                        setClientEdits((p) => ({ ...p, [client.id]: { ...p[client.id], email: e.target.value } }))
+                      }
+                    />
+                    <div className="text-sm text-gray-600 flex items-center gap-2">
+                      <span className="truncate">{invite}</span>
+                      <button
+                        type="button"
+                        className="text-blue-600 underline"
+                        onClick={() => handleCopy(invite)}
+                      >
+                        Copy
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 text-sm">
+                    {client.hasSelectedGift ? (
+                      <span className="text-green-700">
+                        Selected: {client.selectedGiftTitle || client.selectedGiftId}{" "}
+                        {client.selectedAt ? `at ${new Date(client.selectedAt).toLocaleString()}` : ""}
+                      </span>
+                    ) : (
+                      <span className="text-gray-600">No selection yet</span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2 text-sm">
+                  <button
+                    className="rounded border px-3 py-1 hover:bg-gray-50"
+                    onClick={() => handleSaveClient(client.id)}
+                    disabled={clientSaving[client.id]}
+                  >
+                    {clientSaving[client.id] ? "Saving…" : "Save"}
+                  </button>
+                  <button
+                    className="rounded border px-3 py-1 hover:bg-gray-50 text-red-600"
+                    onClick={() => handleDeleteClient(client.id)}
+                    disabled={clientDeleting[client.id]}
+                  >
+                    {clientDeleting[client.id] ? "Deleting…" : "Delete"}
+                  </button>
+                  <button
+                    className="rounded border px-3 py-1 hover:bg-gray-50"
+                    onClick={() => handleCopy(invite)}
+                  >
+                    Copy invite link
+                  </button>
+                  <a
+                    className="rounded border px-3 py-1 hover:bg-gray-50"
+                    href={`mailto:${client.email}?subject=Your%20Gift%20of%20Time%20invitation&body=${encodeURIComponent(invite)}`}
+                  >
+                    Email link
+                  </a>
+                </div>
               </div>
-              <div className="text-sm">
-                {client.hasSelectedGift ? (
-                  <span className="text-green-700">
-                    Selected: {client.selectedGiftTitle || client.selectedGiftId}{" "}
-                    {client.selectedAt ? `at ${new Date(client.selectedAt).toLocaleString()}` : ""}
-                  </span>
-                ) : (
-                  <span className="text-gray-600">No selection yet</span>
-                )}
-              </div>
-            </div>
-          ))}
+            )
+          })}
           {clients.length === 0 && <div className="p-4 text-sm text-gray-600">No clients yet.</div>}
         </div>
       </section>

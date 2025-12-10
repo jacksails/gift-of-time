@@ -27,6 +27,7 @@ export async function GET() {
       lastName: client.lastName,
       companyName: client.companyName,
       email: client.email,
+      token: client.token,
       hasSelectedGift: client.selectedGiftId != null,
       selectedGiftId: client.selectedGiftId,
       selectedGiftTitle: client.selectedGift?.title ?? null,
