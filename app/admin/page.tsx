@@ -326,15 +326,16 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto py-10 px-4 space-y-10">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-semibold">Gift of Time Admin</h1>
-        <p className="text-sm text-gray-600">Create client invites, manage selections, and edit gifts.</p>
-        {loading && <p className="text-sm text-gray-600">Loading...</p>}
-      </header>
-
+    <div className="min-h-screen bg-slate-50 text-slate-900">
+      <div className="max-w-6xl mx-auto py-10 px-4 space-y-8">
+        <header className="space-y-2">
+          <h1 className="text-3xl font-semibold font-serif">Gift of Time Admin</h1>
+          <p className="text-sm text-slate-600">Create client invites, manage selections, and edit gifts.</p>
+          {loading && <p className="text-sm text-slate-600">Loading...</p>}
+          {authError && <p className="text-sm text-red-600">{authError}</p>}
+        </header>
       <div className="grid gap-8 lg:grid-cols-2">
-        <section className="space-y-4 p-6 rounded-xl border bg-white shadow-sm">
+        <section className="space-y-4 p-6 rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-xl font-semibold">Create Client Link</h2>
             {inviteUrl && (
@@ -349,28 +350,28 @@ export default function AdminPage() {
           </div>
           <form className="grid grid-cols-1 sm:grid-cols-2 gap-4" onSubmit={handleCreateClient}>
             <input
-              className="rounded border px-3 py-2"
+              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none"
               placeholder="First name"
               value={clientForm.firstName}
               onChange={(e) => setClientForm((p) => ({ ...p, firstName: e.target.value }))}
               required
             />
             <input
-              className="rounded border px-3 py-2"
+              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none"
               placeholder="Last name"
               value={clientForm.lastName}
               onChange={(e) => setClientForm((p) => ({ ...p, lastName: e.target.value }))}
               required
             />
             <input
-              className="rounded border px-3 py-2"
+              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none"
               placeholder="Company"
               value={clientForm.companyName}
               onChange={(e) => setClientForm((p) => ({ ...p, companyName: e.target.value }))}
               required
             />
             <input
-              className="rounded border px-3 py-2"
+              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none"
               placeholder="Email"
               value={clientForm.email}
               onChange={(e) => setClientForm((p) => ({ ...p, email: e.target.value }))}
@@ -378,7 +379,7 @@ export default function AdminPage() {
               type="email"
             />
             <div className="sm:col-span-2 flex items-center gap-3">
-              <button type="submit" className="rounded bg-black text-white px-4 py-2">
+              <button type="submit" className="rounded-lg bg-slate-900 text-white px-4 py-2 hover:bg-slate-800">
                 Create link
               </button>
               {createError && <p className="text-sm text-red-600">{createError}</p>}
@@ -394,19 +395,19 @@ export default function AdminPage() {
           </form>
         </section>
 
-        <section className="space-y-4 p-6 rounded-xl border bg-white shadow-sm">
+        <section className="space-y-4 p-6 rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Import / Export</h2>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={handleExport}
-              className="rounded border px-3 py-2 hover:bg-gray-50"
+              className="rounded-lg border border-slate-300 px-3 py-2 hover:bg-slate-50"
               type="button"
             >
               Export CSV
             </button>
-            <label className="rounded border px-3 py-2 hover:bg-gray-50 cursor-pointer">
+            <label className="rounded-lg border border-slate-300 px-3 py-2 hover:bg-slate-50 cursor-pointer">
               <input
                 type="file"
                 accept=".csv,text/csv"
@@ -438,26 +439,26 @@ export default function AdminPage() {
             const edit = clientEdits[client.id] || {}
             const invite = inviteFor(client.token as any || "")
             return (
-              <div key={client.id} className="p-4 rounded-xl border bg-white shadow-sm space-y-3">
+              <div key={client.id} className="p-4 rounded-2xl border border-slate-200 bg-white shadow-sm space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-2 w-full">
                     <div className="flex flex-wrap gap-2">
                       <input
-                        className="rounded border px-3 py-2 w-40"
+                        className="rounded-lg border border-slate-300 bg-white px-3 py-2 w-40 text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none"
                         defaultValue={client.firstName}
                         onChange={(e) =>
                           setClientEdits((p) => ({ ...p, [client.id]: { ...p[client.id], firstName: e.target.value } }))
                         }
                       />
                       <input
-                        className="rounded border px-3 py-2 w-40"
+                        className="rounded-lg border border-slate-300 bg-white px-3 py-2 w-40 text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none"
                         defaultValue={client.lastName}
                         onChange={(e) =>
                           setClientEdits((p) => ({ ...p, [client.id]: { ...p[client.id], lastName: e.target.value } }))
                         }
                       />
                       <input
-                        className="rounded border px-3 py-2 w-60"
+                        className="rounded-lg border border-slate-300 bg-white px-3 py-2 w-60 text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none"
                         defaultValue={client.companyName}
                         onChange={(e) =>
                           setClientEdits((p) => ({
@@ -468,7 +469,7 @@ export default function AdminPage() {
                       />
                     </div>
                     <input
-                      className="rounded border px-3 py-2 w-full"
+                      className="rounded-lg border border-slate-300 bg-white px-3 py-2 w-full text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none"
                       defaultValue={client.email}
                       onChange={(e) =>
                         setClientEdits((p) => ({ ...p, [client.id]: { ...p[client.id], email: e.target.value } }))
@@ -725,6 +726,7 @@ export default function AdminPage() {
           {gifts.length === 0 && <div className="text-sm text-gray-600">No gifts found.</div>}
         </div>
       </section>
+      </div>
     </div>
   )
 }
