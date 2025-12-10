@@ -10,7 +10,7 @@ interface GiftGridProps {
 
 export default function GiftGrid({ gifts, onGiftClick }: GiftGridProps) {
   return (
-    <div className="grid grid-cols-3 gap-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 xl:gap-8">
       {gifts
         .filter((gift) => gift.isActive)
         .sort((a, b) => a.sortOrder - b.sortOrder)

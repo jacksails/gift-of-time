@@ -1,80 +1,126 @@
 import type { Client, Gift } from "@/types/gift"
-import { gifts as staticGifts } from "@/data/gifts"
 
+function getApiBaseUrl(): string {
+  const fromEnv =
+    (typeof import.meta !== "undefined" ? (import.meta as any)?.env?.VITE_API_BASE_URL : undefined) ||
+    (typeof process !== "undefined" ? (process.env.VITE_API_BASE_URL as string | undefined) : undefined)
+
+  return fromEnv || ""
+}
+
+type ClientAndGiftsResponse = {
+  client: {
+    id: string
+    firstName: string
+    lastName: string
+    companyName: string
+    email: string
+    hasSelectedGift: boolean
+    selectedGiftId?: string | null
+  }
+  gifts: Gift[]
+}
+
+type SubmitSelectionResponse = {
+  success: boolean
+  selectedGiftId: string
+  selectedAt: string
+}
+
+/**
+ * Fetch client and gifts by token.
+ * Throws:
+ * - "NOT_FOUND" when token is missing/invalid
+ * - "SERVER_ERROR" for all other failures
+ */
 export async function fetchClientAndGifts(token: string): Promise<{
   client: Client
   gifts: Gift[]
 }> {
-  // Simulate network delay
-  await new Promise((resolve) => setTimeout(resolve, 800))
-
-  // Check for missing or invalid token
-  if (!token || token === "invalid") {
+  if (!token) {
     throw new Error("NOT_FOUND")
   }
 
-  if (token === "already-chosen") {
-    const preselectedGiftId = staticGifts[0].id
-    const client: Client = {
-      id: "client-001",
-      firstName: "Alex",
-      lastName: "Thompson",
-      companyName: "Acme Corporation",
-      email: "alex.thompson@acme.com",
-      hasSelectedGift: true,
-      selectedGiftId: preselectedGiftId,
-    }
+  const baseUrl = getApiBaseUrl()
+  const url = `${baseUrl}/api/client-and-gifts?t=${encodeURIComponent(token)}`
 
-    return {
-      client,
-      gifts: staticGifts,
-    }
+  const response = await fetch(url)
+
+  if (response.status === 404) {
+    throw new Error("NOT_FOUND")
   }
 
-  // Mock client data
-  const client: Client = {
-    id: "client-001",
-    firstName: "Alex",
-    lastName: "Thompson",
-    companyName: "Acme Corporation",
-    email: "alex.thompson@acme.com",
-    hasSelectedGift: false,
-    selectedGiftId: null,
+  if (!response.ok) {
+    throw new Error("SERVER_ERROR")
   }
+
+  const data = (await response.json()) as ClientAndGiftsResponse
 
   return {
-    client,
-    gifts: staticGifts,
+    client: {
+      id: data.client.id,
+      firstName: data.client.firstName,
+      lastName: data.client.lastName,
+      companyName: data.client.companyName,
+      email: data.client.email,
+      hasSelectedGift: data.client.hasSelectedGift,
+      selectedGiftId: data.client.selectedGiftId ?? null,
+    },
+    gifts: data.gifts,
   }
 }
 
 export async function submitGiftSelection(params: {
   token: string
   giftId: string
-}): Promise<{
-  success: boolean
-  selectedGiftId: string
-  selectedAt: string
-}> {
-  // Validate inputs
-  if (!params.token || !params.giftId) {
+}): Promise<SubmitSelectionResponse> {
+  const { token, giftId } = params
+
+  if (!token || !giftId) {
     throw new Error("INVALID_INPUT")
   }
 
-  // Simulate network delay
-  await new Promise((resolve) => setTimeout(resolve, 600))
+  const baseUrl = getApiBaseUrl()
+  const url = `${baseUrl}/api/select-gift`
 
-  if (params.token === "already-chosen") {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ token, giftId }),
+  })
+
+  if (response.status === 404) {
+    throw new Error("NOT_FOUND")
+  }
+
+  if (response.status === 409) {
     throw new Error("ALREADY_SELECTED")
   }
 
-  if (Math.random() < 0.05) {
+  if (response.status === 400) {
+    let errorBody: { error?: string } | undefined
+    try {
+      errorBody = (await response.json()) as { error?: string }
+    } catch {
+      errorBody = undefined
+    }
+
+    if (errorBody?.error === "INVALID_GIFT") {
+      throw new Error("INVALID_GIFT")
+    }
+    if (errorBody?.error === "INVALID_INPUT") {
+      throw new Error("INVALID_INPUT")
+    }
+
     throw new Error("SERVER_ERROR")
   }
 
-  return {
-    success: true,
-    selectedGiftId: params.giftId,
-    selectedAt: new Date().toISOString(),
+  if (!response.ok) {
+    throw new Error("SERVER_ERROR")
   }
+
+  const data = (await response.json()) as SubmitSelectionResponse
+  return data
 }
