@@ -21,8 +21,9 @@ type GiftFormState = Partial<Gift>
 async function jsonFetch<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const res = await fetch(input, init)
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}))
-    throw new Error((body as { error?: string }).error || "SERVER_ERROR")
+    const body = await res.json().catch(() => ({})) as { error?: string; details?: string }
+    const errorMsg = body.details ? `${body.error}: ${body.details}` : body.error || "SERVER_ERROR"
+    throw new Error(errorMsg)
   }
   return res.json()
 }

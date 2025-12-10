@@ -58,15 +58,32 @@ export async function DELETE(_req: NextRequest, context: { params: Promise<{ id:
     return NextResponse.json({ error: "UNAUTHORISED" }, { status: 401 })
   }
 
-  const { id } = await context.params
+  let id: string
+  try {
+    const params = await context.params
+    id = params.id
+  } catch (err) {
+    console.error("Failed to get params", err)
+    return NextResponse.json({ error: "INVALID_PARAMS" }, { status: 400 })
+  }
+
+  if (!id) {
+    return NextResponse.json({ error: "MISSING_ID" }, { status: 400 })
+  }
 
   try {
+    // First check if client exists
+    const existing = await prisma.client.findUnique({ where: { id } })
+    if (!existing) {
+      return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 })
+    }
+
     await prisma.client.delete({ where: { id } })
     return NextResponse.json({ success: true })
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error("Failed to delete client", error)
-    return NextResponse.json({ error: "SERVER_ERROR" }, { status: 500 })
+    const message = error instanceof Error ? error.message : "Unknown error"
+    return NextResponse.json({ error: "SERVER_ERROR", details: message }, { status: 500 })
   }
 }
 
