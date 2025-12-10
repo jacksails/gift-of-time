@@ -6,7 +6,7 @@
     "dev": "pnpm run dev:api",
     "dev:api": "tsx watch src/index.ts",
     "dev:web": "next dev",
-    "build": "pnpm run build:api",
+    "build": "pnpm run build:api && pnpm run build:web",
     "build:api": "tsc -p tsconfig.api.json",
     "build:web": "next build",
     "start": "node dist/index.js",
