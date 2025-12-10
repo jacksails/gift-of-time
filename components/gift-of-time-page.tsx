@@ -9,7 +9,7 @@ import Header from "./header"
 import SelectionBoxShell from "./selection-box-shell"
 import GiftConfirmationView from "./gift-confirmation-view"
 
-type PageStatus = "loading" | "ready" | "error"
+type PageStatus = "loading" | "ready" | "error" | "landing"
 type ErrorType = "NOT_FOUND" | "SERVER_ERROR" | null
 
 export default function GiftOfTimePage() {
@@ -27,8 +27,8 @@ export default function GiftOfTimePage() {
     const token = searchParams.get("t")
 
     if (!token) {
-      setStatus("error")
-      setErrorType("NOT_FOUND")
+      setStatus("landing")
+      setErrorType(null)
       return
     }
 
@@ -133,6 +133,19 @@ export default function GiftOfTimePage() {
       <div className="min-h-screen bg-gradient-to-br from-black via-zinc-950 to-black flex flex-col">
         <Header />
         <main className="flex-1 flex items-center justify-center px-8 py-12">
+          {status === "landing" && (
+            <div className="max-w-2xl text-center space-y-4 text-white">
+              <p className="text-sm uppercase tracking-[0.25em] text-gold">IMA Gift of Time</p>
+              <h1 className="text-4xl md:text-5xl font-semibold">Welcome to your Gift of Time selection</h1>
+              <p className="text-lg text-zinc-300">
+                Your personal invitation link includes a token parameter. Please use the link you received in your
+                email to view and select your session.
+              </p>
+              <p className="text-sm text-zinc-400">
+                Didn’t get a link? Reach out to your IMA contact and we’ll resend your invitation.
+              </p>
+            </div>
+          )}
           {status === "loading" && (
             <div className="text-center max-w-md">
               <div className="mb-6 flex justify-center">
