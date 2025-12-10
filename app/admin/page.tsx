@@ -252,7 +252,8 @@ export default function AdminPage() {
     setClientError(null)
     setClientDeleting((p) => ({ ...p, [id]: true }))
     try {
-      await jsonFetch<{ success: boolean }>(`/api/admin/proxy/clients/${id}`, {
+      // Use query param instead of path param to avoid Next.js routing issues
+      await jsonFetch<{ success: boolean }>(`/api/admin/proxy/clients?id=${encodeURIComponent(id)}`, {
         method: "DELETE",
       })
       setClients((prev) => prev.filter((c) => c.id !== id))

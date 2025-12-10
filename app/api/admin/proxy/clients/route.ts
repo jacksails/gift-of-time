@@ -42,6 +42,34 @@ export async function GET() {
   }
 }
 
+export async function DELETE(request: NextRequest) {
+  if (!(await isAuthed())) {
+    return NextResponse.json({ error: "UNAUTHORISED" }, { status: 401 })
+  }
+
+  // Accept ID from query param: /api/admin/proxy/clients?id=xxx
+  const { searchParams } = new URL(request.url)
+  const id = searchParams.get("id")
+
+  if (!id) {
+    return NextResponse.json({ error: "MISSING_ID" }, { status: 400 })
+  }
+
+  try {
+    const existing = await prisma.client.findUnique({ where: { id } })
+    if (!existing) {
+      return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 })
+    }
+
+    await prisma.client.delete({ where: { id } })
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error("Failed to delete client", error)
+    const message = error instanceof Error ? error.message : "Unknown error"
+    return NextResponse.json({ error: "SERVER_ERROR", details: message }, { status: 500 })
+  }
+}
+
 export async function POST(request: Request) {
   if (!(await isAuthed())) {
     return NextResponse.json({ error: "UNAUTHORISED" }, { status: 401 })
