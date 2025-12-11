@@ -157,15 +157,15 @@ export default function GiftOfTimePage() {
                 A personal invitation
               </h1>
               <p className="text-lg text-zinc-200 font-serif">
-                We’ve curated a set of bespoke experiences for our partners this season. Please open the unique link
+                We've curated a set of bespoke experiences for our partners this season. Please open the unique link
                 we sent you to view the sessions and confirm your choice.
               </p>
               <p className="text-sm text-zinc-300">
-                If you can’t find your link, speak to your contact at IMA or email{" "}
+                If you can't find your link, speak to your contact at IMA or email{" "}
                 <a className="underline text-gold" href="mailto:reception@ima.global">
                   reception@ima.global
                 </a>{" "}
-                and we’ll resend it right away.
+                and we'll resend it right away.
               </p>
             </div>
           )}

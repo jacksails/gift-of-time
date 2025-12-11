@@ -14,7 +14,11 @@ export default function Header() {
           />
         </div>
 
-        <div className="text-gold text-sm font-medium tracking-wide">Gift of Time 2025</div>
+        <div className="text-gold text-sm font-medium tracking-wide flex items-center gap-2">
+          <span className="text-cranberry text-xs">✦</span>
+          Gift of Time {new Date().getFullYear()}
+          <span className="text-forest text-xs">✦</span>
+        </div>
       </div>
     </header>
   )
