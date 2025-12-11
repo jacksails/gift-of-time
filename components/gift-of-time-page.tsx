@@ -143,6 +143,7 @@ export default function GiftOfTimePage() {
           }}
           aria-hidden="true"
         />
+        <Snowfall />
         <Header />
         <main className="flex-1 flex items-center justify-center px-8 py-12">
           {status === "landing" && (
