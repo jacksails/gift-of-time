@@ -32,12 +32,7 @@ export default function SelectionBoxShell({
 
   return (
     <div className="w-full max-w-5xl">
-      <div className="bg-zinc-950/80 backdrop-blur border-2 border-gold/50 rounded-2xl shadow-2xl shadow-gold/10 p-12 relative animate-fade-in-scale">
-        <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-gold rounded-tl-2xl" />
-        <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-gold rounded-tr-2xl" />
-        <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-gold rounded-bl-2xl" />
-        <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-gold rounded-br-2xl" />
-
+      <div className="bg-zinc-950/80 backdrop-blur border-2 border-gold/40 rounded-2xl shadow-2xl shadow-gold/10 p-12 relative animate-fade-in-scale">
         <div className="absolute inset-0 rounded-2xl shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)] pointer-events-none" />
 
         <div className="text-center mb-12 relative">
