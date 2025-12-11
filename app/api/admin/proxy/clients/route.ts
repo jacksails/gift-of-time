@@ -63,6 +63,12 @@ export async function PUT(request: NextRequest) {
   if (isString(body.lastName)) data.lastName = (body.lastName as string).trim()
   if (isString(body.companyName)) data.companyName = (body.companyName as string).trim()
   if (isString(body.email)) data.email = (body.email as string).trim()
+  
+  // Support clearing the client's gift selection
+  if (body.clearSelection === true) {
+    data.selectedGiftId = null
+    data.selectedAt = null
+  }
 
   if (Object.keys(data).length === 0) {
     return NextResponse.json({ error: "INVALID_INPUT" }, { status: 400 })

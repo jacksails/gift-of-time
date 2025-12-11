@@ -19,11 +19,6 @@ export default function GiftConfirmationView({ gift, client }: GiftConfirmationV
   return (
     <div className="max-w-3xl mx-auto animate-fade-in-scale">
       <div className="bg-zinc-950/80 backdrop-blur border-2 border-gold/40 rounded-2xl p-12 shadow-2xl shadow-gold/20">
-        <p className="text-xs uppercase tracking-[0.3em] text-zinc-500 mb-4 text-center">
-          <span className="text-cranberry">✦</span>
-          {" "}Confirmed{" "}
-          <span className="text-forest">✦</span>
-        </p>
         <h2
           ref={headingRef}
           tabIndex={-1}
@@ -33,8 +28,8 @@ export default function GiftConfirmationView({ gift, client }: GiftConfirmationV
         </h2>
 
         <p className="text-center text-zinc-300 text-lg leading-relaxed mb-10">
-          We will be in touch shortly to arrange your session. If anything changes in the meantime, please
-          get in touch.
+          We will be in touch shortly to arrange your session in Q1 2026. If anything changes in the meantime, please
+          contact your usual IMA team.
         </p>
 
         {/* Gift Summary Card */}
@@ -49,7 +44,7 @@ export default function GiftConfirmationView({ gift, client }: GiftConfirmationV
             </p>
 
             <div className="flex gap-6 text-sm text-zinc-400">
-              {gift.duration && (
+              {gift.durationMinutes && (
                 <div className="flex items-center gap-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -66,7 +61,7 @@ export default function GiftConfirmationView({ gift, client }: GiftConfirmationV
                       d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  <span>{gift.duration}</span>
+                  <span>{gift.durationMinutes} minutes</span>
                 </div>
               )}
               {gift.format && (

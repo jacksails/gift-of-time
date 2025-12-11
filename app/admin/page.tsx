@@ -42,6 +42,7 @@ export default function AdminPage() {
   const [clientEdits, setClientEdits] = useState<Record<string, Partial<ClientRow>>>({})
   const [clientSaving, setClientSaving] = useState<Record<string, boolean>>({})
   const [clientDeleting, setClientDeleting] = useState<Record<string, boolean>>({})
+  const [clientClearing, setClientClearing] = useState<Record<string, boolean>>({})
   const [clientError, setClientError] = useState<string | null>(null)
   const [importError, setImportError] = useState<string | null>(null)
   const [importResult, setImportResult] = useState<string | null>(null)
@@ -267,6 +268,24 @@ export default function AdminPage() {
       setClientError((err as Error).message || "SERVER_ERROR")
     } finally {
       setClientDeleting((p) => ({ ...p, [id]: false }))
+    }
+  }
+
+  const handleClearSelection = async (id: string) => {
+    if (!window.confirm("Clear this client's gift selection? They will be able to select a new gift.")) return
+    setClientError(null)
+    setClientClearing((p) => ({ ...p, [id]: true }))
+    try {
+      const updated = await jsonFetch<ClientRow>(`/api/admin/proxy/clients?id=${encodeURIComponent(id)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clearSelection: true }),
+      })
+      setClients((prev) => prev.map((c) => (c.id === id ? { ...c, ...updated } : c)))
+    } catch (err) {
+      setClientError((err as Error).message || "SERVER_ERROR")
+    } finally {
+      setClientClearing((p) => ({ ...p, [id]: false }))
     }
   }
 
@@ -498,14 +517,14 @@ export default function AdminPage() {
                             {isEditing ? (
                               <div className="flex gap-2">
                                 <input
-                                  className="w-24 rounded border border-slate-300 px-2 py-1 text-sm"
+                                  className="w-24 rounded border border-slate-300 px-2 py-1 text-sm text-slate-900 bg-white"
                                   defaultValue={client.firstName}
                                   onChange={(e) =>
                                     setClientEdits((p) => ({ ...p, [client.id]: { ...p[client.id], firstName: e.target.value } }))
                                   }
                                 />
                                 <input
-                                  className="w-24 rounded border border-slate-300 px-2 py-1 text-sm"
+                                  className="w-24 rounded border border-slate-300 px-2 py-1 text-sm text-slate-900 bg-white"
                                   defaultValue={client.lastName}
                                   onChange={(e) =>
                                     setClientEdits((p) => ({ ...p, [client.id]: { ...p[client.id], lastName: e.target.value } }))
@@ -521,7 +540,7 @@ export default function AdminPage() {
                           <td className="px-6 py-4 whitespace-nowrap">
                             {isEditing ? (
                               <input
-                                className="w-32 rounded border border-slate-300 px-2 py-1 text-sm"
+                                className="w-32 rounded border border-slate-300 px-2 py-1 text-sm text-slate-900 bg-white"
                                 defaultValue={client.companyName}
                                 onChange={(e) =>
                                   setClientEdits((p) => ({ ...p, [client.id]: { ...p[client.id], companyName: e.target.value } }))
@@ -534,7 +553,7 @@ export default function AdminPage() {
                           <td className="px-6 py-4 whitespace-nowrap">
                             {isEditing ? (
                               <input
-                                className="w-48 rounded border border-slate-300 px-2 py-1 text-sm"
+                                className="w-48 rounded border border-slate-300 px-2 py-1 text-sm text-slate-900 bg-white"
                                 defaultValue={client.email}
                                 onChange={(e) =>
                                   setClientEdits((p) => ({ ...p, [client.id]: { ...p[client.id], email: e.target.value } }))
@@ -546,9 +565,21 @@ export default function AdminPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             {client.hasSelectedGift ? (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                {client.selectedGiftTitle || "Selected"}
-                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  {client.selectedGiftTitle || "Selected"}
+                                </span>
+                                {isEditing && (
+                                  <button
+                                    onClick={() => handleClearSelection(client.id)}
+                                    disabled={clientClearing[client.id]}
+                                    className="text-xs text-orange-600 hover:text-orange-800 font-medium disabled:opacity-50"
+                                    type="button"
+                                  >
+                                    {clientClearing[client.id] ? "Clearing..." : "Clear"}
+                                  </button>
+                                )}
+                              </div>
                             ) : (
                               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
                                 Pending
@@ -760,7 +791,7 @@ export default function AdminPage() {
                           <td className="px-6 py-4 whitespace-nowrap">
                             {isEditing ? (
                               <input
-                                className="w-16 rounded border border-slate-300 px-2 py-1 text-sm"
+                                className="w-16 rounded border border-slate-300 px-2 py-1 text-sm text-slate-900 bg-white"
                                 type="number"
                                 defaultValue={gift.sortOrder ?? 0}
                                 onChange={(e) => handleGiftChange(gift.id, "sortOrder", e.target.value)}
@@ -772,7 +803,7 @@ export default function AdminPage() {
                           <td className="px-6 py-4">
                             {isEditing ? (
                               <input
-                                className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
+                                className="w-full rounded border border-slate-300 px-2 py-1 text-sm text-slate-900 bg-white"
                                 defaultValue={gift.title}
                                 onChange={(e) => handleGiftChange(gift.id, "title", e.target.value)}
                               />
@@ -786,7 +817,7 @@ export default function AdminPage() {
                           <td className="px-6 py-4">
                             {isEditing ? (
                               <input
-                                className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
+                                className="w-full rounded border border-slate-300 px-2 py-1 text-sm text-slate-900 bg-white"
                                 defaultValue={gift.strapline}
                                 onChange={(e) => handleGiftChange(gift.id, "strapline", e.target.value)}
                               />
@@ -798,13 +829,13 @@ export default function AdminPage() {
                             {isEditing ? (
                               <div className="space-y-1">
                                 <input
-                                  className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
+                                  className="w-full rounded border border-slate-300 px-2 py-1 text-sm text-slate-900 bg-white"
                                   defaultValue={gift.ledByName}
                                   onChange={(e) => handleGiftChange(gift.id, "ledByName", e.target.value)}
                                   placeholder="Name"
                                 />
                                 <input
-                                  className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
+                                  className="w-full rounded border border-slate-300 px-2 py-1 text-sm text-slate-900 bg-white"
                                   defaultValue={gift.ledByRole}
                                   onChange={(e) => handleGiftChange(gift.id, "ledByRole", e.target.value)}
                                   placeholder="Role"
@@ -819,7 +850,7 @@ export default function AdminPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             {isEditing ? (
-                              <label className="flex items-center gap-2 text-sm">
+                              <label className="flex items-center gap-2 text-sm text-slate-900">
                                 <input
                                   type="checkbox"
                                   checked={edit.isActive ?? gift.isActive}
