@@ -8,6 +8,7 @@ import DesktopOnlyGuard from "./desktop-only-guard"
 import Header from "./header"
 import SelectionBoxShell from "./selection-box-shell"
 import GiftConfirmationView from "./gift-confirmation-view"
+import Snowfall from "./snowfall"
 
 type PageStatus = "loading" | "ready" | "error" | "landing"
 type ErrorType = "NOT_FOUND" | "SERVER_ERROR" | null
